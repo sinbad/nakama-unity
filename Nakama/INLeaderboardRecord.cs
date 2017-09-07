@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Nakama
 {
-    public interface INLeaderboardRecord
+    public interface INLeaderboardRecord : IComparable<INLeaderboardRecord>, IEquatable<INLeaderboardRecord>
     {
         byte[] LeaderboardId { get; }
         byte[] OwnerId { get; }

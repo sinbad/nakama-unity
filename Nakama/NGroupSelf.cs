@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Nakama
 {
     internal class NGroupSelf : INGroupSelf
@@ -61,13 +59,55 @@ namespace Nakama
             }
         }
 
-        public override string ToString()
+        public int CompareTo(INGroup other)
         {
-            var f = "NGroupSelf(Id={0},Private={1},CreatorId={2},Name={3},Description={4},AvatarUrl={5}," +
-                    "Lang={6},Metadata={7},Count={8},CreatedAt={9},UpdatedAt={10},State={11})";
-            return String.Format(f, Id, Private, CreatorId, Name, Description, AvatarUrl,
-                Lang, Metadata, Count, CreatedAt, UpdatedAt,State);
+            if (other == null)
+            {
+                return 1;
+            }
+
+            for (int i = 0, l = Id.Length; i < l; i++)
+            {
+                if (Id[i] != other.Id[i])
+                {
+                    return -1;
+                }
+            }
+
+            return 0;
         }
 
+        public static bool operator >(NGroupSelf self, NGroupSelf other)
+        {
+            return self.CompareTo(other) == 1;
+        }
+
+        public static bool operator <(NGroupSelf self, NGroupSelf other)
+        {
+            return self.CompareTo(other) == -1;
+        }
+
+        public static bool operator >=(NGroupSelf self, NGroupSelf other)
+        {
+            return self.CompareTo(other) >= 0;
+        }
+
+        public static bool operator <=(NGroupSelf self, NGroupSelf other)
+        {
+            return self.CompareTo(other) <= 0;
+        }
+
+        public bool Equals(INGroup other)
+        {
+            return CompareTo(other) == 0;
+        }
+
+        public override string ToString()
+        {
+            const string f = "NGroupSelf(Id={0},Private={1},CreatorId={2},Name={3},Description={4},AvatarUrl={5}," +
+                             "Lang={6},Metadata={7},Count={8},CreatedAt={9},UpdatedAt={10},State={11})";
+            return string.Format(f, Id, Private, CreatorId, Name, Description, AvatarUrl,
+                Lang, Metadata, Count, CreatedAt, UpdatedAt, State);
+        }
     }
 }

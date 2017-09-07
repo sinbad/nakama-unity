@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Nakama
 {
     internal class NNotification : INNotification
@@ -28,6 +26,7 @@ namespace Nakama
         public long CreatedAt { get; private set; }
         public long ExpiresAt { get; private set; }
         public bool Persistent { get; private set; }
+
         internal NNotification(Notification n)
         {
             Id = n.Id.ToByteArray();
@@ -39,11 +38,55 @@ namespace Nakama
             ExpiresAt = n.ExpiresAt;
             Persistent = n.Persistent;
         }
-        
+
+        public int CompareTo(INNotification other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            for (int i = 0, l = Id.Length; i < l; i++)
+            {
+                if (Id[i] != other.Id[i])
+                {
+                    return -1;
+                }
+            }
+
+            return 0;
+        }
+
+        public static bool operator >(NNotification self, NNotification other)
+        {
+            return self.CompareTo(other) == 1;
+        }
+
+        public static bool operator <(NNotification self, NNotification other)
+        {
+            return self.CompareTo(other) == -1;
+        }
+
+        public static bool operator >=(NNotification self, NNotification other)
+        {
+            return self.CompareTo(other) >= 0;
+        }
+
+        public static bool operator <=(NNotification self, NNotification other)
+        {
+            return self.CompareTo(other) <= 0;
+        }
+
+        public bool Equals(INNotification other)
+        {
+            return CompareTo(other) == 0;
+        }
+
         public override string ToString()
         {
-            var f = "NNotification(Id={0},Subject={1},Content={2},Code={3},SenderId={4},CreatedAt={5},ExpiresAt={6},Persistent={7})";
-            return String.Format(f, Id, Subject, Content, Code, SenderId, CreatedAt, ExpiresAt, Persistent);
+            const string f =
+                "NNotification(Id={0},Subject={1},Content={2},Code={3},SenderId={4},CreatedAt={5},ExpiresAt={6},Persistent={7})";
+            return string.Format(f, Id, Subject, Content, Code, SenderId, CreatedAt, ExpiresAt, Persistent);
         }
     }
 }

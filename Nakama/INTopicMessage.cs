@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Nakama
 {
     public enum TopicMessageType : uint { Chat = 0, GroupJoin, GroupAdd, GroupLeave, GroupKick, GroupPromoted }
 
-    public interface INTopicMessage
+    public interface INTopicMessage : IComparable<INTopicMessage>, IEquatable<INTopicMessage>
     {
         INTopicId Topic { get; }
         byte[] UserId { get; }

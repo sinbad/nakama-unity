@@ -41,10 +41,53 @@ namespace Nakama
             PrevId = message.PrevId.ToByteArray();
         }
 
+        public int CompareTo(INLeaderboard other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            for (int i = 0, l = Id.Length; i < l; i++)
+            {
+                if (Id[i] != other.Id[i])
+                {
+                    return -1;
+                }
+            }
+
+            return 0;
+        }
+
+        public static bool operator >(NLeaderboard self, NLeaderboard other)
+        {
+            return self.CompareTo(other) == 1;
+        }
+
+        public static bool operator <(NLeaderboard self, NLeaderboard other)
+        {
+            return self.CompareTo(other) == -1;
+        }
+
+        public static bool operator >=(NLeaderboard self, NLeaderboard other)
+        {
+            return self.CompareTo(other) >= 0;
+        }
+
+        public static bool operator <=(NLeaderboard self, NLeaderboard other)
+        {
+            return self.CompareTo(other) <= 0;
+        }
+
+        public bool Equals(INLeaderboard other)
+        {
+            return CompareTo(other) == 0;
+        }
+
         public override string ToString()
         {
-            var f = "NLeaderboard(Id={0},Authoritative={1},Sort={2},Count={3},ResetSchedule={4},Metadata={5},NextId={6},PrevId={7})";
-            return String.Format(f, Id, Authoritative, Sort, Count, ResetSchedule, Metadata, NextId, PrevId);
+            const string f = "NLeaderboard(Id={0},Authoritative={1},Sort={2},Count={3},ResetSchedule={4},Metadata={5},NextId={6},PrevId={7})";
+            return string.Format(f, Id, Authoritative, Sort, Count, ResetSchedule, Metadata, NextId, PrevId);
         }
     }
 }

@@ -57,12 +57,55 @@ namespace Nakama
             UpdatedAt = message.UpdatedAt;
         }
 
+        public int CompareTo(INUser other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            for (int i = 0, l = Id.Length; i < l; i++)
+            {
+                if (Id[i] != other.Id[i])
+                {
+                    return -1;
+                }
+            }
+
+            return 0;
+        }
+
+        public static bool operator >(NUser self, NUser other)
+        {
+            return self.CompareTo(other) == 1;
+        }
+
+        public static bool operator <(NUser self, NUser other)
+        {
+            return self.CompareTo(other) == -1;
+        }
+
+        public static bool operator >=(NUser self, NUser other)
+        {
+            return self.CompareTo(other) >= 0;
+        }
+
+        public static bool operator <=(NUser self, NUser other)
+        {
+            return self.CompareTo(other) <= 0;
+        }
+
+        public bool Equals(INUser other)
+        {
+            return CompareTo(other) == 0;
+        }
+
         public override string ToString()
         {
-            var f = "NUser(AvatarUrl={0},CreatedAt={1},Fullname={2},Handle={3},Id={4},Lang={5}," +
-                    "LastOnlineAt={6},Location={7},Metadata={8},Timezone={9},UpdatedAt={10})";
-            return String.Format(f, AvatarUrl, CreatedAt, Fullname, Handle, Id, Lang, LastOnlineAt,
-                                 Location, Metadata, Timezone, UpdatedAt);
+            const string f = "NUser(AvatarUrl={0},CreatedAt={1},Fullname={2},Handle={3},Id={4},Lang={5}," +
+                             "LastOnlineAt={6},Location={7},Metadata={8},Timezone={9},UpdatedAt={10})";
+            return string.Format(f, AvatarUrl, CreatedAt, Fullname, Handle, Id, Lang, LastOnlineAt,
+                Location, Metadata, Timezone, UpdatedAt);
         }
     }
 }

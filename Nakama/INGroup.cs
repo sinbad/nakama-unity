@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Nakama
 {
-    public interface INGroup
+    public interface INGroup : IComparable<INGroup>, IEquatable<INGroup>
     {
         byte[] Id { get; }
         bool Private { get; }

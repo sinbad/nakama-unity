@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Nakama
 {
-    public interface INNotification
+    public interface INNotification : IComparable<INNotification>, IEquatable<INNotification>
     {
         byte[] Id { get; }
         string Subject { get; }

@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Nakama
 {
-    public interface INUserPresence
+    public interface INUserPresence : IComparable<INUserPresence>, IEquatable<INUserPresence>
     {
         byte[] UserId { get; }
         byte[] SessionId { get; }

@@ -82,14 +82,57 @@ namespace Nakama
             Verified = message.Verified;
         }
 
+        public int CompareTo(INUser other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            for (int i = 0, l = Id.Length; i < l; i++)
+            {
+                if (Id[i] != other.Id[i])
+                {
+                    return -1;
+                }
+            }
+
+            return 0;
+        }
+
+        public static bool operator >(NSelf self, NSelf other)
+        {
+            return self.CompareTo(other) == 1;
+        }
+
+        public static bool operator <(NSelf self, NSelf other)
+        {
+            return self.CompareTo(other) == -1;
+        }
+
+        public static bool operator >=(NSelf self, NSelf other)
+        {
+            return self.CompareTo(other) >= 0;
+        }
+
+        public static bool operator <=(NSelf self, NSelf other)
+        {
+            return self.CompareTo(other) <= 0;
+        }
+
+        public bool Equals(INUser other)
+        {
+            return CompareTo(other) == 0;
+        }
+
         public override string ToString()
         {
-            var f = "NSelf(AvatarUrl={0},CreatedAt={1},CustomId={2},DeviceIds={3},Email={4},FacebookId={5}," +
-                    "Fullname={6},GameCenterId={7},GoogleId={8},Handle={9},Id={10},Lang={11},LastOnlineAt={12}," +
-                    "Location={13},Metadata={14},SteamId={15},Timezone={16},UpdatedAt={17},Verified={18})";
-            return String.Format(f, AvatarUrl, CreatedAt, CustomId, DeviceIds, Email, FacebookId,
-                                 Fullname, GameCenterId, GoogleId, Handle, Id, Lang, LastOnlineAt, Location,
-                                 Metadata, SteamId, Timezone, UpdatedAt, Verified);
+            const string f = "NSelf(AvatarUrl={0},CreatedAt={1},CustomId={2},DeviceIds={3},Email={4},FacebookId={5}," +
+                             "Fullname={6},GameCenterId={7},GoogleId={8},Handle={9},Id={10},Lang={11},LastOnlineAt={12}," +
+                             "Location={13},Metadata={14},SteamId={15},Timezone={16},UpdatedAt={17},Verified={18})";
+            return string.Format(f, AvatarUrl, CreatedAt, CustomId, DeviceIds, Email, FacebookId,
+                Fullname, GameCenterId, GoogleId, Handle, Id, Lang, LastOnlineAt, Location,
+                Metadata, SteamId, Timezone, UpdatedAt, Verified);
         }
     }
 }

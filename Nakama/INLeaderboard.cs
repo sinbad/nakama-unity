@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Nakama
 {
-    public interface INLeaderboard
+    public interface INLeaderboard : IComparable<INLeaderboard>, IEquatable<INLeaderboard>
     {
         byte[] Id { get; }
         bool Authoritative { get; }

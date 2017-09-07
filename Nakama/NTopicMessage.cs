@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace Nakama
 {
     public class NTopicMessage : INTopicMessage
@@ -70,12 +68,55 @@ namespace Nakama
             Data = message.Data.ToByteArray();
         }
 
+        public int CompareTo(INTopicMessage other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            for (int i = 0, l = MessageId.Length; i < l; i++)
+            {
+                if (MessageId[i] != other.MessageId[i])
+                {
+                    return -1;
+                }
+            }
+
+            return 0;
+        }
+
+        public static bool operator >(NTopicMessage self, NTopicMessage other)
+        {
+            return self.CompareTo(other) == 1;
+        }
+
+        public static bool operator <(NTopicMessage self, NTopicMessage other)
+        {
+            return self.CompareTo(other) == -1;
+        }
+
+        public static bool operator >=(NTopicMessage self, NTopicMessage other)
+        {
+            return self.CompareTo(other) >= 0;
+        }
+
+        public static bool operator <=(NTopicMessage self, NTopicMessage other)
+        {
+            return self.CompareTo(other) <= 0;
+        }
+
+        public bool Equals(INTopicMessage other)
+        {
+            return CompareTo(other) == 0;
+        }
+
         public override string ToString()
         {
-            var f = "NTopicMessage(Topic={0},UserId={1},MessageId={2},CreatedAt={3},ExpiresAt={4},Handle={5}," +
-                    "Type={6},Data={7})";
-            return String.Format(f, Topic.ToString(), UserId, MessageId, CreatedAt, ExpiresAt, Handle,
-                    Type, Data);
+            const string f =
+                "NTopicMessage(Topic={0},UserId={1},MessageId={2},CreatedAt={3},ExpiresAt={4},Handle={5}," +
+                "Type={6},Data={7})";
+            return string.Format(f, Topic, UserId, MessageId, CreatedAt, ExpiresAt, Handle, Type, Data);
         }
     }
 }

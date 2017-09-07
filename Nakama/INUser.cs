@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace Nakama
 {
-    public interface INUser
+    public interface INUser : IComparable<INUser>, IEquatable<INUser>
     {
         string AvatarUrl { get; }
 

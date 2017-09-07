@@ -51,11 +51,54 @@ namespace Nakama
             ExpiresAt = message.ExpiresAt;
         }
 
+        public int CompareTo(INLeaderboardRecord other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            for (int i = 0, l = LeaderboardId.Length; i < l; i++)
+            {
+                if (LeaderboardId[i] != other.LeaderboardId[i])
+                {
+                    return -1;
+                }
+            }
+
+            return 0;
+        }
+
+        public static bool operator >(NLeaderboardRecord self, NLeaderboardRecord other)
+        {
+            return self.CompareTo(other) == 1;
+        }
+
+        public static bool operator <(NLeaderboardRecord self, NLeaderboardRecord other)
+        {
+            return self.CompareTo(other) == -1;
+        }
+
+        public static bool operator >=(NLeaderboardRecord self, NLeaderboardRecord other)
+        {
+            return self.CompareTo(other) >= 0;
+        }
+
+        public static bool operator <=(NLeaderboardRecord self, NLeaderboardRecord other)
+        {
+            return self.CompareTo(other) <= 0;
+        }
+
+        public bool Equals(INLeaderboardRecord other)
+        {
+            return CompareTo(other) == 0;
+        }
+
         public override string ToString()
         {
-            var f = "NLeaderboardRecord(LeaderboardId={0},OwnerId={1},Handle={2},Lang={3},Location={4},Timezone={5}," +
-                    "Rank={6},Score={7},NumScore={8},Metadata={9},RankedAt={10},UpdatedAt={11},ExpiresAt={12})";
-            return String.Format(f, LeaderboardId, OwnerId, Handle, Lang, Location, Timezone,
+            const string f = "NLeaderboardRecord(LeaderboardId={0},OwnerId={1},Handle={2},Lang={3},Location={4},Timezone={5}," +
+                             "Rank={6},Score={7},NumScore={8},Metadata={9},RankedAt={10},UpdatedAt={11},ExpiresAt={12})";
+            return string.Format(f, LeaderboardId, OwnerId, Handle, Lang, Location, Timezone,
                 Rank, Score, NumScore, Metadata, RankedAt, UpdatedAt, ExpiresAt);
         }
     }

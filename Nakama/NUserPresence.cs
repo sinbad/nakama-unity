@@ -31,10 +31,40 @@ namespace Nakama
             Handle = message.Handle;
         }
 
+        public int CompareTo(INUserPresence other)
+        {
+            return string.Compare(Handle, other.Handle, StringComparison.Ordinal);
+        }
+
+        public static bool operator >(NUserPresence self, NUserPresence other)
+        {
+            return self.CompareTo(other) == 1;
+        }
+
+        public static bool operator <(NUserPresence self, NUserPresence other)
+        {
+            return self.CompareTo(other) == -1;
+        }
+
+        public static bool operator >=(NUserPresence self, NUserPresence other)
+        {
+            return self.CompareTo(other) >= 0;
+        }
+
+        public static bool operator <=(NUserPresence self, NUserPresence other)
+        {
+            return self.CompareTo(other) <= 0;
+        }
+
+        public bool Equals(INUserPresence other)
+        {
+            return CompareTo(other) == 0;
+        }
+
         public override string ToString()
         {
-            var f = "NUserPresence(UserId={0},SessionId={1},Handle={2})";
-            return String.Format(f, UserId, SessionId, Handle);
+            const string f = "NUserPresence(UserId={0},SessionId={1},Handle={2})";
+            return string.Format(f, UserId, SessionId, Handle);
         }
     }
 }
