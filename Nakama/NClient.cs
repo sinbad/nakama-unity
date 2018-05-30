@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Google.Protobuf;
 
@@ -77,6 +79,21 @@ namespace Nakama
 
         public bool SSL { get; private set; }
 
+        /// <summary>
+        ///  Option to accept all self-signed certificates. This defaults to
+        ///  true to preserve previous behaviour, but it is HIGHLY recommended
+        ///  to set this to false and instead use SSLValidKeyFingerprints.
+        /// </summary>
+        public bool SSLAcceptAllCertificates { get; private set; }
+
+        /// <summary>
+        ///  SHA-1 Key Fingerprints for self-signed certs which should be accepted
+        ///  so long as they are not expired. SHA-1 rather than SHA-256 because
+        ///  .Net 2.0 compatibility, but this is just the fingerprint, the
+        ///  cert itself can (and should) be SHA-256
+        /// </summary>
+        public string[] SSLValidKeyFingerprints { get; private set; }
+
         public uint Timeout { get; private set; }
 
         public bool Trace { get; private set; }
@@ -92,8 +109,7 @@ namespace Nakama
         {
             // Don't send Expect: 100 Continue when sending HTTP requests
             ServicePointManager.Expect100Continue = false;
-            // Fix SSL certificate handshake
-            ServicePointManager.ServerCertificateValidationCallback += (o, certificate, chain, errors) => true;
+            ServicePointManager.ServerCertificateValidationCallback += ValidateCertificate;
 
             TransportType = transportType;
             ConnectTimeout = 3000;
@@ -101,6 +117,8 @@ namespace Nakama
             Port = 7350;
             ServerKey = serverKey;
             SSL = false;
+            // Although this setting is not recommended, default to previous behaviour
+            SSLAcceptAllCertificates = true;
             Timeout = 5000;
             Trace = false;
             Lang = "en";
@@ -149,6 +167,25 @@ namespace Nakama
                     OnError(new NError(message));
                 }
             });
+        }
+
+        private bool ValidateCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+
+            if (SSLAcceptAllCertificates)
+                return true;
+
+            foreach (string fingerprint in SSLValidKeyFingerprints)
+            {
+                if (fingerprint == certificate.GetCertHashString()) {
+                    Logger.DebugFormat("Accepting certificate '{0}' with fingerprint {1}",
+                        certificate.Subject, fingerprint);
+                    return true;
+                }
+            }
+
+            return false;
+
         }
 
         public void Register(INAuthenticateMessage message,
@@ -293,23 +330,30 @@ namespace Nakama
             TimeSpan span = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             transport.Post(uri.ToString(), payload, authHeader, langHeader, Timeout, ConnectTimeout, (data) =>
             {
-                AuthenticateResponse authResponse = AuthenticateResponse.Parser.ParseFrom(data);
-                Logger.TraceFormatIf(Trace, "DecodedResponse={0}", authResponse);
-
-                switch (authResponse.IdCase)
+                try
                 {
-                    case AuthenticateResponse.IdOneofCase.Session:
-                        callback(new NSession(authResponse.Session.Token, authResponse.Session.UdpToken, System.Convert.ToInt64(span.TotalMilliseconds)));
-                        break;
-                    case AuthenticateResponse.IdOneofCase.Error:
-                        errback(new NError(authResponse.Error, authResponse.CollationId));
-                        break;
-                    case AuthenticateResponse.IdOneofCase.None:
-                        Logger.Error("Received invalid response from server");
-                        break;
-                    default:
-                        Logger.Error("Received invalid response from server");
-                        break;
+                    AuthenticateResponse authResponse = AuthenticateResponse.Parser.ParseFrom(data);
+                    Logger.TraceFormatIf(Trace, "DecodedResponse={0}", authResponse);
+
+                    switch (authResponse.IdCase)
+                    {
+                        case AuthenticateResponse.IdOneofCase.Session:
+                            callback(new NSession(authResponse.Session.Token, authResponse.Session.UdpToken, System.Convert.ToInt64(span.TotalMilliseconds)));
+                            break;
+                        case AuthenticateResponse.IdOneofCase.Error:
+                            errback(new NError(authResponse.Error, authResponse.CollationId));
+                            break;
+                        case AuthenticateResponse.IdOneofCase.None:
+                            errback(new NError("Received invalid response from server"));
+                            break;
+                        default:
+                            errback(new NError("Received invalid response from server"));
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    errback(new NError(string.Format("Unable to parse Auth response: {0}", e)));
                 }
             }, (e) =>
             {
@@ -580,6 +624,29 @@ namespace Nakama
                 return this;
             }
 
+            /// <summary>
+            ///  Option to accept all self-signed certificates. This defaults to
+            ///  true to preserve previous behaviour, but it is HIGHLY recommended
+            ///  to set this to false and instead use SSLValidKeyFingerprints.
+            /// </summary>
+            public Builder SSLAcceptAllCertificates(bool enable)
+            {
+                client.SSLAcceptAllCertificates = enable;
+                return this;
+            }
+
+            /// <summary>
+            ///  SHA-1 Key Fingerprints for self-signed certs which should be accepted
+            ///  so long as they are not expired. SHA-1 rather than SHA-256 because
+            ///  .Net 2.0 compatibility, but this is just the fingerprint, the
+            ///  cert itself can (and should) be SHA-256
+            /// </summary>
+            public Builder SSLValidKeyFingerprints(string[] fps)
+            {
+                client.SSLValidKeyFingerprints = fps;
+                return this;
+            }
+
             public Builder Timeout(uint timeout)
             {
                 client.Timeout = timeout;
@@ -604,6 +671,8 @@ namespace Nakama
                 client.Logger = original.Logger;
                 client.Port = original.Port;
                 client.SSL = original.SSL;
+                client.SSLAcceptAllCertificates = original.SSLAcceptAllCertificates;
+                client.SSLValidKeyFingerprints = original.SSLValidKeyFingerprints;
                 client.Timeout = original.Timeout;
                 client.Trace = original.Trace;
                 return original;
